@@ -1,0 +1,186 @@
+# # import tensorflow as tf
+# import pandas as pd
+# import matplotlib.pyplot as py
+# # import cv2
+#
+# data = pd.read_csv('./Dataset/train.csv')
+# print(data.head())
+# print(data.isnull())
+# py.bar("hello",data['Age'])
+# py.show()
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
+# import numpy as np
+# # Read in the image and print out some stats
+# image = mpimg.imread('test.jpg')
+# print('This image is: ',type(image),
+#          'with dimensions:', image.shape)
+#
+# # Grab the x and y size and make a copy of the image
+# ysize = image.shape[0]
+# xsize = image.shape[1]
+# # Note: always make a copy rather than simply using "="
+# color_select = np.copy(image)
+# # Define our color selection criteria
+# # Note: if you run this code, you'll find these are not sensible values!!
+# # But you'll get a chance to play with them soon in a quiz
+# red_threshold = 200
+# green_threshold = 200
+# blue_threshold = 200
+# rgb_threshold = [red_threshold, green_threshold, blue_threshold]
+# # Identify pixels below the threshold
+# thresholds = (image[:,:,0] < rgb_threshold[0]) | (image[:,:,1] < rgb_threshold[1]) | (image[:,:,2] < rgb_threshold[2])
+# color_select[thresholds] = [0,0,0]
+#
+# # Display the image
+# plt.imshow(color_select)
+# plt.show()
+
+
+
+
+
+
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
+# import numpy as np
+#
+# # Read in the image
+# image = mpimg.imread('test.jpg')
+#
+# # Grab the x and y sizes and make two copies of the image
+# # With one copy we'll extract only the pixels that meet our selection,
+# # then we'll paint those pixels red in the original image to see our selection
+# # overlaid on the original.
+# ysize = image.shape[0]
+# xsize = image.shape[1]
+# color_select= np.copy(image)
+# line_image = np.copy(image)
+#
+# # Define our color criteria
+# red_threshold = 210
+# green_threshold = 210
+# blue_threshold = 210
+# rgb_threshold = [red_threshold, green_threshold, blue_threshold]
+#
+# # Define a triangle region of interest (Note: if you run this code,
+# # Keep in mind the origin (x=0, y=0) is in the upper left in image processing
+# # you'll find these are not sensible values!!
+# # But you'll get a chance to play with them soon in a quiz ;)
+# left_bottom = [0, 539]
+# right_bottom = [900, 539]
+# apex = [450, 0]
+#
+# fit_left = np.polyfit((left_bottom[0], apex[0]), (left_bottom[1], apex[1]), 1)
+# fit_right = np.polyfit((right_bottom[0], apex[0]), (right_bottom[1], apex[1]), 1)
+# fit_bottom = np.polyfit((left_bottom[0], right_bottom[0]), (left_bottom[1], right_bottom[1]), 1)
+#
+# # Mask pixels below the threshold
+# color_thresholds = (image[:,:,0] < rgb_threshold[0]) | \
+#                     (image[:,:,1] < rgb_threshold[1]) | \
+#                     (image[:,:,2] < rgb_threshold[2])
+#
+# # Find the region inside the lines
+# XX, YY = np.meshgrid(np.arange(0, xsize), np.arange(0, ysize))
+# region_thresholds = (YY > (XX*fit_left[0] + fit_left[1])) & \
+#                     (YY > (XX*fit_right[0] + fit_right[1])) & \
+#                     (YY < (XX*fit_bottom[0] + fit_bottom[1]))
+# # Mask color selection
+# color_select[color_thresholds] = [0,0,0]
+# # Find where image is both colored right and in the region
+# line_image[~color_thresholds & region_thresholds] = [255,0,0]
+#
+# # Display our two output images
+# plt.imshow(color_select)
+# plt.show()
+# plt.imshow(line_image)
+# plt.show()
+# # uncomment if plot does not display
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
+# image = mpimg.imread('exit-ramp1.jpg')
+# plt.imshow(image)
+# import cv2  #bringing in OpenCV libraries
+# gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) #grayscale conversion
+# # plt.imshow(gray, cmap='gray')
+# # plt.show()
+# kernel_size = 3
+# blur_gray = cv2.GaussianBlur(gray,(kernel_size, kernel_size), 0)
+# edges = cv2.Canny(gray, 100, 200)
+# plt.imshow(edges, cmap='gray')
+# plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Do relevant imports
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+import cv2
+
+# Read in and grayscale the image
+image = mpimg.imread('exit-ramp.jpg')
+gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+
+# Define a kernel size and apply Gaussian smoothing
+kernel_size = 5
+blur_gray = cv2.GaussianBlur(gray,(kernel_size, kernel_size),0)
+
+# Define our parameters for Canny and apply
+low_threshold = 100
+high_threshold = 200
+masked_edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
+
+# Define the Hough transform parameters
+# Make a blank the same size as our image to draw on
+rho = 1
+theta = np.pi/180
+threshold = 1
+# min_line_length = 150
+# max_line_gap = 20
+#<<--actual---->>
+min_line_length = 10
+max_line_gap = 1
+line_image = np.copy(image)*0
+#creating a blank to draw lines on
+
+# Run Hough on edge detected image
+lines = cv2.HoughLinesP(masked_edges, rho, theta, threshold, np.array([]),
+                            min_line_length, max_line_gap)
+
+# Iterate over the output "lines" and draw lines on the blank
+for line in lines:
+    for x1,y1,x2,y2 in line:
+        cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),10)
+
+# Create a "color" binary image to combine with line image
+color_edges = np.dstack((masked_edges, masked_edges, masked_edges))
+
+# Draw the lines on the edge image
+combo = cv2.addWeighted(color_edges, 0.8, line_image, 1, 0)
+plt.imshow(combo)
+plt.show()
