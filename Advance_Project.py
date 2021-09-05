@@ -7,7 +7,7 @@ import numpy as np
 from scipy import stats
 # <-------------------------------------------------------------------------------------------------->
 # importing Video File Stored in Testing_data folder with OPENCV
-lane_video = cv2.VideoCapture('./Testing_data/challenge_video.mp4')
+lane_video = cv2.VideoCapture('./Testing_data/solidYellowLeft.mp4')
 if not lane_video.isOpened():
     # Error Handling In case of Corrupted Video
     print("Error In Opening Vide Source File")
@@ -21,6 +21,7 @@ while lane_video.isOpened():
         original_image = np.copy(image_of_car)
         # converting the RGB image to Grayscale with OPENCV function
         image_of_car = cv2.cvtColor(image_of_car, cv2.COLOR_RGB2GRAY)
+        # image_of_car = other_image_of_car[1::]
         # Define a kernel size and apply Gaussian smoothing
         kernel_size = 5
         image_of_car = cv2.GaussianBlur(image_of_car, (kernel_size, kernel_size), 0)
